@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-export default function PaymentSuccessEmailTemplate({ customerEmail, customerName, transactionId, productName, amount, currency }) {
+export default function PaymentSuccessEmailTemplate({ customerEmail, customerName, transactionId, productName, amount, currency, vinNumber }) {
   return (
     <div style={{ fontFamily: 'Arial, sans-serif', padding: '20px', color: '#333' }}>
       <h2 style={{ color: '#16a34a' }}>Payment Successful! 🎉</h2>
@@ -23,6 +23,7 @@ export default function PaymentSuccessEmailTemplate({ customerEmail, customerNam
         <p><strong>Product:</strong> {productName}</p>
         <p><strong>Amount:</strong> {currency} {amount}</p>
         <p><strong>Email:</strong> {customerEmail}</p>
+        {vinNumber && vinNumber !== 'N/A' && <p><strong>VIN:</strong> {vinNumber}</p>}
       </div>
 
       <h3 style={{ color: '#333' }}>What happens next?</h3>

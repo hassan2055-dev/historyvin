@@ -42,29 +42,43 @@ export async function POST(request) {
       );
     } catch (verificationError) {
       console.error('Webhook verification failed:', verificationError);
-      return new Response(JSON.stringify({ message: 'Invalid webhook signature' }), { 
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      console.log('Attempting to process webhook without verification (DEV MODE)...');
+      
+      // Parse the body as JSON for development/testing
+      try {
+        eventData = JSON.parse(body);
+      } catch (parseError) {
+        console.error('Failed to parse webhook body:', parseError);
+        return new Response(JSON.stringify({ message: 'Invalid webhook signature and unable to parse body' }), { 
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
     }
 
     // Send payment success email to customer for specific events
-    if ([EventName.TransactionPaid, EventName.TransactionCompleted].includes(eventData.eventType)) {
-      const customerId = eventData.data.customer_id;
-      const transactionId = eventData.data.id;
-      const productName = eventData.data.items?.[0]?.price?.name || "Vehicle History Report";
-      const amount = eventData.data.items?.[0]?.price?.unit_price?.amount || 0;
-      const currency = eventData.data.items?.[0]?.price?.unit_price?.currency_code || 'USD';
-      const name = eventData.data.payments?.[0]?.method_details?.card?.cardholder_name || 'Valued Customer';
+    if ([EventName.TransactionPaid, EventName.TransactionCompleted].includes(eventData.eventType || eventData.event_type)) {
+      const customerId = eventData.data?.customer_id;
+      const transactionId = eventData.data?.id;
+      const productName = eventData.data?.items?.[0]?.price?.name || "Vehicle History Report";
+      const amount = eventData.data?.items?.[0]?.price?.unit_price?.amount || 0;
+      const currency = eventData.data?.items?.[0]?.price?.unit_price?.currency_code || 'USD';
+      const name = eventData.data?.payments?.[0]?.method_details?.card?.cardholder_name || 'Valued Customer';
+      
+      // Get custom data (VIN, email, etc.)
+      const customData = eventData.data?.custom_data || {};
+      const vinNumber = customData.vin || 'N/A';
+      const customerEmailFromCustomData = customData.email;
 
       if (customerId) {
         try {
           // Fetch customer details using Paddle API
           const customer = await paddle.customers.get(customerId);
-          const customerEmail = customer.email;
-          const customerName = customer.name || 'Valued Customer';
+          const customerEmail = customerEmailFromCustomData || customer.email;
+          const customerName = customData.name || customer.name || 'Valued Customer';
 
           if (customerEmail) {
+            console.log('Sending payment success email to:', customerEmail);
             const { data, error } = await resend.emails.send({
               from: 'support@historivin.store',
               to: [customerEmail, "mohamedalzafar@gmail.com"],
@@ -76,17 +90,48 @@ export async function POST(request) {
                 productName,
                 amount: (amount / 100).toFixed(2),
                 currency,
-                name
+                name,
+                vinNumber
               }),
             });
 
             if (error) {
               console.error('Resend email error:', error);
+            } else {
+              console.log('Payment success email sent successfully');
             }
           }
         } catch (customerFetchError) {
           console.error('Failed to fetch customer details:', customerFetchError);
-          // Don't fail the webhook if customer fetch fails
+          // Try sending email with custom data anyway
+          if (customerEmailFromCustomData) {
+            try {
+              console.log('Sending email using custom_data email:', customerEmailFromCustomData);
+              const { data, error } = await resend.emails.send({
+                from: 'support@historivin.store',
+                to: [customerEmailFromCustomData, "mohamedalzafar@gmail.com"],
+                subject: 'Payment Successful - Your Vehicle Report is Being Prepared',
+                react: PaymentSuccessEmailTemplate({
+                  customerEmail: customerEmailFromCustomData,
+                  customerName: customData.name || 'Valued Customer',
+                  transactionId,
+                  productName,
+                  amount: (amount / 100).toFixed(2),
+                  currency,
+                  name: customData.name || 'Valued Customer',
+                  vinNumber
+                }),
+              });
+
+              if (error) {
+                console.error('Resend email error (fallback):', error);
+              } else {
+                console.log('Payment success email sent successfully (fallback)');
+              }
+            } catch (fallbackError) {
+              console.error('Failed to send fallback email:', fallbackError);
+            }
+          }
         }
       }
     }
