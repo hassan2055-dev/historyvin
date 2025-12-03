@@ -51,9 +51,9 @@ export default function PaymentSuccessEmailTemplate({ customerEmail, customerNam
         <a href="mailto:support@historivin.store" style={{ color: '#16a34a' }}> car.check.store@gmail.com</a>
       </p>
 
-      <p>Thank you for choosing HistoriVin!</p>
+      <p>Thank you for choosing CarCheck!</p>
       
-      <p>Best regards,<br/>The HistoriVin Team</p>
+      <p>Best regards,<br/>The CarCheck Team</p>
     </div>
   );
 }
