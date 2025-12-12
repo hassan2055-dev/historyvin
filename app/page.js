@@ -1798,7 +1798,7 @@ if(formattedDate == "15/11/2025"){
                   onClick={openPaddleCheckout}
                   style={modalStyles.proceedButton}
                 >
-                  Proceed to Payment - $40
+                  Proceed to Payment - $30
                 </button>
                 <button
                   onClick={closeCheckoutModal}
