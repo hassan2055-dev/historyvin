@@ -469,7 +469,7 @@ if(formattedDate == "15/11/2025"){
                             : 'border-gray-300 hover:border-blue-300'
                         }`}
                       >
-                        <div className="text-3xl mb-2">🚗</div>
+                        <div className="text-3xl mb-2 font-bold text-blue-600">$60</div>
                         <div className="font-bold text-lg text-gray-900">HATCHBACK</div>
                         <div className="text-xs text-gray-600 mt-1">Compact & Efficient</div>
                       </button>
@@ -483,7 +483,7 @@ if(formattedDate == "15/11/2025"){
                             : 'border-gray-300 hover:border-blue-300'
                         }`}
                       >
-                        <div className="text-3xl mb-2">🚙</div>
+                        <div className="text-3xl mb-2 font-bold text-blue-600">$80</div>
                         <div className="font-bold text-lg text-gray-900">SEDAN</div>
                         <div className="text-xs text-gray-600 mt-1">Classic & Comfortable</div>
                       </button>
@@ -497,7 +497,7 @@ if(formattedDate == "15/11/2025"){
                             : 'border-gray-300 hover:border-blue-300'
                         }`}
                       >
-                        <div className="text-3xl mb-2">🚐</div>
+                        <div className="text-3xl mb-2 font-bold text-blue-600">$90</div>
                         <div className="font-bold text-lg text-gray-900">4X4 / SUV</div>
                         <div className="text-xs text-gray-600 mt-1">Rugged & Powerful</div>
                       </button>
