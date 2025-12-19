@@ -8,14 +8,20 @@ export default function Pricing() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    vin: ''
+    vin: '',
+    carType: 'hatchback' // Default to hatchback
   });
   const [loading, setLoading] = useState(false);
 
-  // Paddle Configuration
+  // Paddle Configuration with Product IDs for different car types
   const CONFIG = {
     clientToken: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN,
-    priceId: process.env.NEXT_PUBLIC_PADDLE_PRICE_ID
+    priceId: process.env.NEXT_PUBLIC_PADDLE_PRICE_ID,
+    products: {
+      hatchback: 'pri_01k34bw78gwcmqk98s3jjda6k4',
+      sedan: 'pri_01kcvwfzy6kffsgz4v9s3d8fx9',
+      '4x4': 'pri_01kcvwnemp9042xv448gefr5ct'
+    }
   };
 
   // Modal styles
@@ -126,7 +132,7 @@ export default function Pricing() {
   // Close modal
   const closeModal = () => {
     setShowModal(false);
-    setFormData({ name: '', email: '', vin: '' });
+    setFormData({ name: '', email: '', vin: '', carType: 'hatchback' });
     setLoading(false);
   };
 
@@ -161,12 +167,14 @@ export default function Pricing() {
   };
 
   // Open Paddle checkout
-  const openPaddleCheckout = (customerName, customerEmail, customerVin) => {
+  const openPaddleCheckout = (customerName, customerEmail, customerVin, carType) => {
     try {
+      // Get the product ID based on selected car type
+      const selectedProductId = CONFIG.products[carType];
 
       window.Paddle.Checkout.open({
         items: [{
-          priceId: CONFIG.priceId,
+          priceId: selectedProductId,
           quantity: 1
         }],
         settings: {
@@ -177,7 +185,8 @@ export default function Pricing() {
         customData: {
           "name": customerName,
           "email": customerEmail,
-          "vin": customerVin
+          "vin": customerVin,
+          "carType": carType
         }
       });
 
@@ -198,11 +207,12 @@ export default function Pricing() {
     const submitData = {
       name: formData.name,
       email: formData.email,
-      vin: formData.vin
+      vin: formData.vin,
+      carType: formData.carType
     };
 
     sendMail(submitData);
-    openPaddleCheckout(formData.name, formData.email, formData.vin);
+    openPaddleCheckout(formData.name, formData.email, formData.vin, formData.carType);
   };
   return (
     <div className="min-h-screen bg-white">
@@ -256,22 +266,60 @@ export default function Pricing() {
               <h2 className="text-3xl font-bold text-gray-900 mb-4">Vehicle History Report</h2>
               <p className="text-gray-600 mb-8">Complete vehicle analysis and history check</p>
               
-              <div className="mb-8">
-                <div className="flex items-center justify-center mb-4">
-                  <span className="text-6xl font-bold text-blue-600">$29</span>
-                  <span className="text-2xl text-gray-500 ml-2">.99</span>
-                </div>
-                <p className="text-gray-600">Per vehicle report • One-time payment</p>
+              <p className="text-xl text-gray-700 mb-8 font-semibold">Select Your Vehicle Type to Get Started</p>
+
+              {/* Vehicle Type Pricing Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <Link href="/" className="block">
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 border-3 border-blue-300 rounded-xl p-6 hover:shadow-2xl hover:scale-105 transition-all cursor-pointer">
+                    <div className="text-5xl mb-3">🚗</div>
+                    <div className="font-bold text-xl text-gray-900 mb-2">HATCHBACK</div>
+                    <div className="text-sm text-gray-600 mb-4">Compact & Efficient</div>
+                    <div className="flex items-center justify-center mb-2">
+                      <span className="text-4xl font-bold text-blue-600">$60</span>
+                    </div>
+                    <div className="text-xs text-gray-600">Per report • One-time payment</div>
+                    <div className="mt-4 bg-blue-600 text-white py-2 px-4 rounded-lg font-semibold text-sm">
+                      Select Hatchback
+                    </div>
+                  </div>
+                </Link>
+
+                <Link href="/" className="block">
+                  <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 border-3 border-indigo-300 rounded-xl p-6 hover:shadow-2xl hover:scale-105 transition-all cursor-pointer">
+                    <div className="text-5xl mb-3">🚙</div>
+                    <div className="font-bold text-xl text-gray-900 mb-2">SEDAN</div>
+                    <div className="text-sm text-gray-600 mb-4">Classic & Comfortable</div>
+                    <div className="flex items-center justify-center mb-2">
+                      <span className="text-4xl font-bold text-indigo-600">$80</span>
+                    </div>
+                    <div className="text-xs text-gray-600">Per report • One-time payment</div>
+                    <div className="mt-4 bg-indigo-600 text-white py-2 px-4 rounded-lg font-semibold text-sm">
+                      Select Sedan
+                    </div>
+                  </div>
+                </Link>
+
+                <Link href="/" className="block">
+                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 border-3 border-purple-300 rounded-xl p-6 hover:shadow-2xl hover:scale-105 transition-all cursor-pointer">
+                    <div className="text-5xl mb-3">🚐</div>
+                    <div className="font-bold text-xl text-gray-900 mb-2">4X4 / SUV</div>
+                    <div className="text-sm text-gray-600 mb-4">Rugged & Powerful</div>
+                    <div className="flex items-center justify-center mb-2">
+                      <span className="text-4xl font-bold text-purple-600">$90</span>
+                    </div>
+                    <div className="text-xs text-gray-600">Per report • One-time payment</div>
+                    <div className="mt-4 bg-purple-600 text-white py-2 px-4 rounded-lg font-semibold text-sm">
+                      Select 4X4/SUV
+                    </div>
+                  </div>
+                </Link>
               </div>
 
-              <div className="mb-8">
-                <button 
-                  onClick={openModal}
-                  className="bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 transition-colors font-semibold text-lg inline-block"
-                >
-                  Get Your Report Now
-                </button>
-                <p className="text-sm text-gray-500 mt-3">Instant delivery • No recurring charges</p>
+              <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-8 text-left">
+                <p className="text-sm text-blue-900">
+                  <strong>💡 Note:</strong> Each vehicle type is associated with a specific product variant for accurate reporting and tailored pricing.
+                </p>
               </div>
 
               {/* Important Notice */}
@@ -303,7 +351,7 @@ export default function Pricing() {
               What is Included in Every Report
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              For $30, you get a comprehensive vehicle history analysis with data from multiple trusted sources.
+              Get a comprehensive vehicle history analysis with data from multiple trusted sources.
             </p>
           </div>
 
@@ -449,12 +497,12 @@ export default function Pricing() {
           <div className="space-y-6">
             {[
               {
-                question: "Why does HistoriVIN cost $30?",
+                question: "Why does HistoriVIN charge different prices?",
                 answer: "Our pricing reflects the comprehensive nature of our reports and the costs associated with accessing premium automotive databases. We provide detailed analysis and professional report formatting - all for less than the cost of a tank of gas."
               },
               {
                 question: "Are there any hidden fees or recurring charges?",
-                answer: "No. The $30 price is a one-time payment per report. There are no hidden fees, monthly subscriptions, or recurring charges. You pay once and receive your complete vehicle history report."
+                answer: "No. Our pricing is a one-time payment per report. There are no hidden fees, monthly subscriptions, or recurring charges. Prices vary by vehicle type (Hatchback: $60, Sedan: $80, SUV/4x4: $90) to reflect the complexity and data required for each vehicle category."
               },
               {
                 question: "Can I get a refund if I'm not satisfied?",
@@ -462,7 +510,7 @@ export default function Pricing() {
               },
               {
                 question: "How does your pricing compare to competitors?",
-                answer: "Our $30 price is competitive with other major vehicle history providers. However, we believe our comprehensive data coverage, fast delivery, and detailed reporting provide exceptional value."
+                answer: "Our pricing is competitive with other major vehicle history providers. We offer tiered pricing based on vehicle type to ensure you get the most accurate and comprehensive data for your specific vehicle. Our fast delivery and detailed reporting provide exceptional value."
               },
               {
                 question: "Do you offer discounts for multiple reports?",
@@ -497,7 +545,7 @@ export default function Pricing() {
               onClick={openModal}
               className="bg-white text-blue-600 px-8 py-4 rounded-lg hover:bg-gray-100 transition-colors font-semibold text-lg inline-block"
             >
-              Get Started for $30
+              Select Your Vehicle Type
             </button>
           </div>
 
@@ -608,6 +656,71 @@ export default function Pricing() {
                   style={modalStyles.input}
                   placeholder="Enter VIN number"
                 />
+              </div>
+
+              {/* Car Type Selection */}
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '10px', fontWeight: '700', fontSize: '16px', color: '#1f2937' }}>
+                  Select Your Vehicle Type:
+                </label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({...formData, carType: 'hatchback'})}
+                    style={{
+                      padding: '15px 10px',
+                      border: formData.carType === 'hatchback' ? '2px solid #2563eb' : '2px solid #d1d5db',
+                      borderRadius: '8px',
+                      background: formData.carType === 'hatchback' ? '#eff6ff' : 'white',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      boxShadow: formData.carType === 'hatchback' ? '0 4px 6px rgba(37, 99, 235, 0.2)' : 'none'
+                    }}
+                  >
+                    <div style={{ fontSize: '24px', marginBottom: '5px' }}>🚗</div>
+                    <div style={{ fontWeight: 'bold', fontSize: '14px', color: '#1f2937' }}>HATCHBACK</div>
+                    <div style={{ fontSize: '10px', color: '#6b7280' }}>Compact</div>
+                  </button>
+                  
+                  <button
+                    type="button"
+                    onClick={() => setFormData({...formData, carType: 'sedan'})}
+                    style={{
+                      padding: '15px 10px',
+                      border: formData.carType === 'sedan' ? '2px solid #2563eb' : '2px solid #d1d5db',
+                      borderRadius: '8px',
+                      background: formData.carType === 'sedan' ? '#eff6ff' : 'white',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      boxShadow: formData.carType === 'sedan' ? '0 4px 6px rgba(37, 99, 235, 0.2)' : 'none'
+                    }}
+                  >
+                    <div style={{ fontSize: '24px', marginBottom: '5px' }}>🚙</div>
+                    <div style={{ fontWeight: 'bold', fontSize: '14px', color: '#1f2937' }}>SEDAN</div>
+                    <div style={{ fontSize: '10px', color: '#6b7280' }}>Classic</div>
+                  </button>
+                  
+                  <button
+                    type="button"
+                    onClick={() => setFormData({...formData, carType: '4x4'})}
+                    style={{
+                      padding: '15px 10px',
+                      border: formData.carType === '4x4' ? '2px solid #2563eb' : '2px solid #d1d5db',
+                      borderRadius: '8px',
+                      background: formData.carType === '4x4' ? '#eff6ff' : 'white',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      boxShadow: formData.carType === '4x4' ? '0 4px 6px rgba(37, 99, 235, 0.2)' : 'none'
+                    }}
+                  >
+                    <div style={{ fontSize: '24px', marginBottom: '5px' }}>🚐</div>
+                    <div style={{ fontWeight: 'bold', fontSize: '14px', color: '#1f2937' }}>4X4/SUV</div>
+                    <div style={{ fontSize: '10px', color: '#6b7280' }}>Rugged</div>
+                  </button>
+                </div>
+                <div style={{ marginTop: '10px', fontSize: '13px', color: '#2563eb', fontWeight: '600' }}>
+                  Selected: <strong>{formData.carType === 'hatchback' ? '🚗 Hatchback' : formData.carType === 'sedan' ? '🚙 Sedan' : '🚐 4x4/SUV'}</strong>
+                </div>
               </div>
 
               <button

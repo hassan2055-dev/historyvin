@@ -6,15 +6,21 @@ export default function App() {
   const [vinInput, setVinInput] = useState('')
   const [emailInput, setEmailInput] = useState('')
   const [carModelInput, setCarModelInput] = useState('')
+  const [carType, setCarType] = useState('hatchback') // Default to hatchback
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showCheckoutModal, setShowCheckoutModal] = useState(false)
   const [checkoutLoading, setCheckoutLoading] = useState(false)
 
-  // Paddle Configuration
+  // Paddle Configuration with Product IDs for different car types
   const CONFIG = {
     clientToken: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN,
-    priceId: process.env.NEXT_PUBLIC_PADDLE_PRICE_ID
+    priceId: process.env.NEXT_PUBLIC_PADDLE_PRICE_ID,
+    products: {
+      hatchback: 'pri_01k34bw78gwcmqk98s3jjda6k4',
+      sedan: 'pri_01kcvwfzy6kffsgz4v9s3d8fx9',
+      '4x4': 'pri_01kcvwnemp9042xv448gefr5ct'
+    }
   }
 
   // Modal styles
@@ -132,9 +138,12 @@ export default function App() {
     try {
       setCheckoutLoading(true)
 
+      // Get the product ID based on selected car type
+      const selectedProductId = CONFIG.products[carType]
+
       window.Paddle.Checkout.open({
         items: [{
-          priceId: CONFIG.priceId,
+          priceId: selectedProductId,
           quantity: 1
         }],
         settings: {
@@ -145,7 +154,8 @@ export default function App() {
         customData: {
           "vin": vinInput.trim(),
           "email": emailInput.trim(),
-          "carModel": carModelInput.trim()
+          "carModel": carModelInput.trim(),
+          "carType": carType
         }
       })
 
@@ -211,7 +221,7 @@ if(formattedDate == "15/11/2025"){
     setIsSubmitting(true)
 
     try {
-      // Send VIN, email, and car model to backend
+      // Send VIN, email, car model, and car type to backend
       const response = await fetch('/api/send-vin', {
         method: 'POST',
         headers: {
@@ -220,7 +230,8 @@ if(formattedDate == "15/11/2025"){
         body: JSON.stringify({
           vin: vinInput.trim(),
           email: emailInput.trim(),
-          carModel: carModelInput.trim()
+          carModel: carModelInput.trim(),
+          carType: carType
         })
       })
       
@@ -233,7 +244,8 @@ if(formattedDate == "15/11/2025"){
         body: JSON.stringify({
           vin: vinInput.trim(),
           email: emailInput.trim(),
-          carModel: carModelInput.trim()
+          carModel: carModelInput.trim(),
+          carType: carType
         })
       })
 
@@ -246,6 +258,7 @@ if(formattedDate == "15/11/2025"){
           vin: vinInput.trim(),
           email: emailInput.trim(),
           carModel: carModelInput.trim(),
+          carType: carType,
           timestamp: new Date().toISOString()
         }))
 
@@ -441,6 +454,59 @@ if(formattedDate == "15/11/2025"){
                     </div>
                   </div>
 
+                  {/* Car Type Selection */}
+                  <div>
+                    <label className="block text-gray-900 font-semibold mb-3 text-lg">
+                      <strong>Select Your Vehicle Type:</strong>
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <button
+                        type="button"
+                        onClick={() => setCarType('hatchback')}
+                        className={`p-4 border-2 rounded-lg transition-all ${
+                          carType === 'hatchback'
+                            ? 'border-blue-600 bg-blue-50 shadow-lg'
+                            : 'border-gray-300 hover:border-blue-300'
+                        }`}
+                      >
+                        <div className="text-3xl mb-2">🚗</div>
+                        <div className="font-bold text-lg text-gray-900">HATCHBACK</div>
+                        <div className="text-xs text-gray-600 mt-1">Compact & Efficient</div>
+                      </button>
+                      
+                      <button
+                        type="button"
+                        onClick={() => setCarType('sedan')}
+                        className={`p-4 border-2 rounded-lg transition-all ${
+                          carType === 'sedan'
+                            ? 'border-blue-600 bg-blue-50 shadow-lg'
+                            : 'border-gray-300 hover:border-blue-300'
+                        }`}
+                      >
+                        <div className="text-3xl mb-2">🚙</div>
+                        <div className="font-bold text-lg text-gray-900">SEDAN</div>
+                        <div className="text-xs text-gray-600 mt-1">Classic & Comfortable</div>
+                      </button>
+                      
+                      <button
+                        type="button"
+                        onClick={() => setCarType('4x4')}
+                        className={`p-4 border-2 rounded-lg transition-all ${
+                          carType === '4x4'
+                            ? 'border-blue-600 bg-blue-50 shadow-lg'
+                            : 'border-gray-300 hover:border-blue-300'
+                        }`}
+                      >
+                        <div className="text-3xl mb-2">🚐</div>
+                        <div className="font-bold text-lg text-gray-900">4X4 / SUV</div>
+                        <div className="text-xs text-gray-600 mt-1">Rugged & Powerful</div>
+                      </button>
+                    </div>
+                    <div className="mt-2 text-sm text-gray-500">
+                      <strong>Selected:</strong> {carType === 'hatchback' ? 'Hatchback' : carType === 'sedan' ? 'Sedan' : '4x4/SUV'} variant
+                    </div>
+                  </div>
+
                   <button
                     type="submit"
                     disabled={!vinInput.trim() || !emailInput.trim() || !carModelInput.trim() || isSubmitting}
@@ -510,11 +576,19 @@ if(formattedDate == "15/11/2025"){
                 <div className="mt-6 pt-6 border-t border-gray-200">
                   <div className="flex flex-col sm:flex-row justify-between items-center text-sm text-gray-600">
                     <div className="mb-2 sm:mb-0">
-                      <strong className="text-gray-900">Price:</strong> $30 per report
+                      <strong className="text-gray-900">Price:</strong> $60-$90 per report
                     </div>
                     <div className="mb-2 sm:mb-0">
                       <strong className="text-gray-900">Delivery time:</strong> Instantly
                     </div>
+                  </div>
+                  <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                    <p className="text-sm font-semibold text-blue-900 mb-2">
+                      💡 Pricing: Hatchback $60 | Sedan $80 | SUV/4x4 $90
+                    </p>
+                    <p className="text-xs text-gray-600">
+                      Each vehicle type is associated with a specific product variant for accurate reporting
+                    </p>
                   </div>
                   <div className="mt-6 text-xs text-blue-600">
                     <svg className="w-4 h-4 mr-1 inline" fill="currentColor" viewBox="0 0 20 20">
@@ -541,7 +615,7 @@ if(formattedDate == "15/11/2025"){
                   <span className="text-sm font-semibold">✓ Trusted</span>
                 </div>
                 <div className="absolute -bottom-4 -left-4 bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg">
-                  <span className="text-sm font-semibold">$30</span>
+                  <span className="text-sm font-semibold">From $60</span>
                 </div>
               </div>
             </div>
@@ -557,7 +631,7 @@ if(formattedDate == "15/11/2025"){
               What You Get with Every HistoriVIN Report
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Our $30 vehicle history report includes comprehensive analysis and detailed documentation delivered as a professional PDF report to your email.
+              Our vehicle history reports include comprehensive analysis and detailed documentation delivered as a professional PDF report to your email. Pricing varies by vehicle type.
             </p>
           </div>
 
@@ -888,7 +962,7 @@ if(formattedDate == "15/11/2025"){
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
               <div className="text-center">
-                <div className="font-semibold text-gray-900">One-time fee: $30</div>
+                <div className="font-semibold text-gray-900">Tiered Pricing: $60/$80/$90</div>
               </div>
               <div className="text-center">
                 <div className="font-semibold text-gray-900">Report delivered within 6–12 hours</div>
@@ -1783,8 +1857,13 @@ if(formattedDate == "15/11/2025"){
               <p style={{ marginBottom: '10px', fontSize: '14px', color: '#4b5563' }}>
                 <strong>Email:</strong> {emailInput}
               </p>
-              <p style={{ marginBottom: '0', fontSize: '14px', color: '#4b5563' }}>
+              <p style={{ marginBottom: '10px', fontSize: '14px', color: '#4b5563' }}>
                 <strong>Car Model:</strong> {carModelInput}
+              </p>
+              <p style={{ marginBottom: '0', fontSize: '16px', color: '#1f2937' }}>
+                <strong>Vehicle Type:</strong> <strong style={{ color: '#2563eb', fontSize: '18px' }}>
+                  {carType === 'hatchback' ? '🚗 HATCHBACK' : carType === 'sedan' ? '🚙 SEDAN' : '🚐 4X4/SUV'}
+                </strong>
               </p>
             </div>
 
@@ -1798,7 +1877,7 @@ if(formattedDate == "15/11/2025"){
                   onClick={openPaddleCheckout}
                   style={modalStyles.proceedButton}
                 >
-                  Proceed to Payment - $30
+                  Proceed to Payment
                 </button>
                 <button
                   onClick={closeCheckoutModal}
