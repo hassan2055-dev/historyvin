@@ -60,7 +60,7 @@ export async function POST(request) {
     if ([EventName.TransactionPaid, EventName.TransactionCompleted].includes(eventData.eventType || eventData.event_type)) {
       const customerId = eventData.data?.customer_id;
       const transactionId = eventData.data?.id;
-      const productName = eventData.data?.items?.[0]?.price?.name || "Vehicle History Report";
+      const productName = eventData.data?.details?.line_items?.[0]?.product?.name || "N-A";
       const amount = eventData.data?.items?.[0]?.price?.unit_price?.amount || 0;
       const currency = eventData.data?.items?.[0]?.price?.unit_price?.currency_code || 'USD';
       const name = eventData.data?.payments?.[0]?.method_details?.card?.cardholder_name || 'Valued Customer';
